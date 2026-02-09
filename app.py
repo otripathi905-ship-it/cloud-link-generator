@@ -182,25 +182,31 @@ def redirect_link(token):
         if ip_address and ',' in ip_address:
             ip_address = ip_address.split(',')[0].strip()
         
-        # Detect OS/Device
-        device_type = 'other'
+        # Detect OS/Device with improved detection
+        device_type = None
         redirect_url = None
         
+        # Check for mobile devices first (more specific)
         if 'android' in user_agent:
             device_type = 'android'
             redirect_url = link.android_url
         elif any(x in user_agent for x in ['iphone', 'ipad', 'ipod']):
             device_type = 'ios'
             redirect_url = link.ios_url
-        elif 'windows' in user_agent:
+        # Then check for desktop OS
+        elif 'windows' in user_agent or 'win32' in user_agent or 'win64' in user_agent:
             device_type = 'windows'
             redirect_url = link.windows_url
-        elif 'macintosh' in user_agent or 'mac os' in user_agent:
+        elif 'macintosh' in user_agent or 'mac os' in user_agent or 'darwin' in user_agent:
             device_type = 'macos'
             redirect_url = link.macos_url
-        elif 'linux' in user_agent:
+        elif 'linux' in user_agent and 'android' not in user_agent:
             device_type = 'linux'
             redirect_url = link.linux_url
+        
+        # If still no match, mark as other
+        if not device_type:
+            device_type = 'other'
         
         # Use fallback if no OS-specific URL
         if not redirect_url:
